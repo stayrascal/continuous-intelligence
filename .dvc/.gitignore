@@ -6,3 +6,8 @@
 /state-journal
 /state-wal
 /cache
+state
+lock
+config.local
+updater
+cache
