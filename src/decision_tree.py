@@ -117,7 +117,7 @@ def write_predictions_and_score(validation_score, model, columns_used):
     print("Done deciding with trees")
 
 
-def main(model=Model.DECISION_TREE, seed=None):
+def main(model=Model.RANDOM_FOREST, seed=None):
     original_train, original_validate = load_data()
     train, validate = encode(original_train, original_validate)
     model = make_model(train, model, seed)
