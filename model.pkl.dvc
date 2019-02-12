@@ -1,4 +1,4 @@
-cmd: python src/decision_tree.py
+cmd: python3 src/decision_tree.py
 deps:
 - md5: cd93b6020c635fbc703d692a0d5c3b4a
   path: data/splitter/train.csv

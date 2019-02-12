@@ -1,4 +1,4 @@
-cmd: python src/download_data.py
+cmd: python3 src/download_data.py
 deps:
 - md5: a726db7fcada1d8dab236c31a117ba3f
   path: src/download_data.py

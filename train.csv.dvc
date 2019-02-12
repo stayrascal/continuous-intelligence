@@ -1,4 +1,4 @@
-cmd: python src/splitter.py
+cmd: python3 src/splitter.py
 deps:
 - md5: a269ea06e07424957949abb6172578f8
   path: data/raw/store47-2016.csv
