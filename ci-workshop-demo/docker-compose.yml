@@ -1,0 +1,19 @@
+version: "2"
+services:
+  ci-workshop-demo:
+    build: ./demo
+    environment:
+      - FLUENTD_HOST=localhost
+      - FLUENTD_PORT=24224
+    ports:
+      - 5005:5005
+    # logging:
+    #   driver: fluentd
+    #   options:
+    #     tag: docker.httpd
+    networks:
+      - esnet
+
+networks:
+  esnet:
+    external: true

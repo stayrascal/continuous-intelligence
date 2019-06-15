@@ -36,40 +36,42 @@ def index():
 
 @app.route('/prediction')
 def get_prediction():
-  loaded_model = joblib.load('data/models/model.pkl')
+    loaded_model = joblib.load('data/models/model.pkl')
 
-  date_string = request.args.get('date')
+    date_string = request.args.get('date')
 
-  date = datetime.strptime(date_string, '%Y-%m-%d')
+    date = datetime.strptime(date_string, '%Y-%m-%d')
 
-  product = products[request.args.get("item_nbr")]
-  data = {
-    "date": date_string,
-    "item_nbr": request.args.get("item_nbr"),
-    "family": product['family'],
-    "class": product['class'],
-    "perishable": product['perishable'],
-    "transactions": 1000,
-    "year": date.year,
-    "month": date.month,
-    "day": date.day,
-    "dayofweek": date.weekday(),
-    "days_til_end_of_data": 0,
-    "dayoff": date.weekday() >= 5
-  }
-  df = pd.DataFrame(data=data, index=['row1'])
+    product = products[request.args.get("item_nbr")]
+    data = {
+        "date": date_string,
+        "item_nbr": request.args.get("item_nbr"),
+        "family": product['family'],
+        "class": product['class'],
+        "perishable": product['perishable'],
+        "transactions": 1000,
+        "year": date.year,
+        "month": date.month,
+        "day": date.day,
+        "dayofweek": date.weekday(),
+        "days_til_end_of_data": 0,
+        "dayoff": date.weekday() >= 5
+    }
+    df = pd.DataFrame(data=data, index=['row1'])
 
-  df = utils.encode_categorical_columns(df)
-  pred = loaded_model.predict(df)
-  if FLUENTD_HOST:
-      logger = sender.FluentSender(TENANT, host=FLUENTD_HOST, port=int(FLUENTD_PORT))
-      log_payload = {'prediction': pred[0], **data}
-      print('logging {}'.format(log_payload))
-      if not logger.emit('prediction', log_payload):
-          print(logger.last_error)
-          logger.clear_last_error()
+    df = utils.encode_categorical_columns(df)
+    pred = loaded_model.predict(df)
+    if FLUENTD_HOST:
+        logger = sender.FluentSender(TENANT, host=FLUENTD_HOST, port=int(FLUENTD_PORT))
+        log_payload = {'prediction': pred[0], **data}
+        print('logging {}'.format(log_payload))
+        if not logger.emit('prediction', log_payload):
+            print(logger.last_error)
+            logger.clear_last_error()
+    else:
+        print("not setting FLUENTD_HOST!")
 
-  return "%d" % pred[0]
+    return "%d" % pred[0]
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port=5005)

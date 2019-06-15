@@ -6,10 +6,7 @@ RUN apt-get update \
   && ln -s /usr/bin/python3 python \
   && pip3 install --no-cache-dir --upgrade pip
 
-RUN mkdir -p /app/continuous-intelligence \
-  && git clone https://github.com/stayrascal/continuous-intelligence.git /app/continuous-intelligence \
-  && cd /app/continuous-intelligence/ci-workshop-demo \
-  && pip3 install --no-cache-dir -r requirements.txt
+RUN mkdir -p /app
+COPY requirements.txt /app
 
-
-WORKDIR /app/continuous-intelligence/ci-workshop-demo
+RUN cd /app & pip3 install --no-cache-dir -r requirements.txt
