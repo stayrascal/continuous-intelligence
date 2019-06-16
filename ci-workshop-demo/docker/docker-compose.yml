@@ -1,7 +1,7 @@
 version: "2"
 services:
   ci-workshop-demo:
-    build: ./demo
+    image: ci-workshop-demo:${GO_PIPELINE_LABEL}
     environment:
       - FLUENTD_HOST=172.17.0.1
       - FLUENTD_PORT=24224
