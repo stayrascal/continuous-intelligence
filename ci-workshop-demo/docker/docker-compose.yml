@@ -3,8 +3,8 @@ services:
   ci-workshop-demo:
     image: ci-workshop-demo:${GO_PIPELINE_LABEL}
     environment:
-      - FLUENTD_HOST=172.17.0.1
-      - FLUENTD_PORT=24224
+      - FLUENTD_HOST=${FLUENTD_HOST}
+      - FLUENTD_PORT=${FLUENTD_PORT}
     ports:
       - 5005:5005
     # logging:
