@@ -1,43 +1,105 @@
-version: "3.1"
+version: "3.3"
 services:
+  cerebro:
+    image: lmenezes/cerebro:0.8.3
+    container_name: cerrbro
+    ports:
+      - 9001:9000
+    command:
+      - -Dhosts.0.host=http://elasticsearch:9200
+    networks: 
+      - esnet
+
+
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    container_name: es01
     environment:
-      - discovery.type=single-node
+      - node.name=es01
+      # - discovery.type=single-node
+      - discovery.seed_hosts=es02
+      - cluster.initial_master_nodes=es01,es02
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      # - network.publish_host=elasticsearch
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - "http.port=9200"
       - "http.cors.allow-origin=http://localhost:1358,http://127.0.0.1:1358"
       - "http.cors.enabled=true"
       - "http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization"
       - "http.cors.allow-credentials=true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     ports:
-      - 127.0.0.1:9200:9200
-      - 127.0.0.1:9300:9300
+      - 9200:9200
+      - 9300:9300
     volumes:
-      - ./tmp/elastichsearch:/usr/share/elasticsearch/data
+      - ./tmp/es01:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+  
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    container_name: es02
+    environment:
+      - node.name=es02
+      - discovery.seed_hosts=es01
+      - cluster.initial_master_nodes=es01,es02
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      # - network.publish_host=elasticsearch
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # - "http.port=9200"
+      # - "http.cors.allow-origin=http://localhost:1358,http://127.0.0.1:1358"
+      # - "http.cors.enabled=true"
+      # - "http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization"
+      # - "http.cors.allow-credentials=true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./tmp/es02:/usr/share/elasticsearch/data
     networks:
       - esnet
 
   dejavu:
     image: appbaseio/dejavu:latest
     ports:
-      - 127.0.0.1:1358:1358
+      - 1358:1358
     networks:
       - esnet
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:6.2.3
+    image: docker.elastic.co/kibana/kibana:7.2.0
     environment:
-      ELASTICSEARCH_URL: http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - XPACK_GRAPH_ENABLED=true
+      - TIMELION_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED="true"
+      # - I18N_LOCALE=zh-CN
     ports:
-      - 127.0.0.1:5601:5601
+      - 5601:5601
     networks:
       - esnet
+  
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.2.0
+    ports:
+      - "5001:5000"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - esnet
+
 
   portainer:
     image: portainer/portainer
     ports:
-      - 127.0.0.1:9000:9000
+      - 9000:9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock 
     networks:
@@ -48,8 +110,8 @@ services:
   fluentd:
     build: ./fluentd
     ports:
-      - 127.0.0.1:24224:24224
-      - 127.0.0.1:24224:24224/udp
+      - 24224:24224
+      - 24224:24224/udp
     volumes:
       - ./config:/fluentd/etc
     environment:
@@ -58,7 +120,7 @@ services:
   web:
     image: httpd
     ports:
-      - 127.0.0.1:80:80
+      - 80:80
     logging:
       driver: fluentd
       options:
@@ -66,13 +128,23 @@ services:
     networks:
       - esnet
   
-  mlflow:
-    build: ./mlflow
-    ports:
-      - 5000:5000
-    networks:
-      - esnet
+  # mlflow:
+  #   build: ./mlflow
+  #   ports:
+  #     - 5000:5000
+  #   networks:
+  #     - esnet
 
 networks:
   esnet:
     external: true
+
+configs:
+  elastic_config:
+    file: ./elasticsearch/config/elasticsearch.yml
+  logstash_config:
+    file: ./logstash/config/logstash.yml
+  logstash_config:
+    file: ./logstash/pipeline/logstash.conf
+  kibana_config:
+    file: ./kibana/config/kibana.yml
