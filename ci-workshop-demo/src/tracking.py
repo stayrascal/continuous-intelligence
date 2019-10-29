@@ -1,10 +1,12 @@
-import mlflow
 import os
 
-MLFLOW_TRACKING_URL = os.getenv('MLFLOW_TRACKING_URL')
-TENANT = os.getenv('TENANT','local')
-RUN_LABEL = os.getenv('GO_PIPELINE_LABEL', '0')
+import mlflow
+
+MLFLOW_TRACKING_URL = os.getenv("MLFLOW_TRACKING_URL")
+TENANT = os.getenv("TENANT", "local")
+RUN_LABEL = os.getenv("GO_PIPELINE_LABEL", "0")
 USE_MLFLOW = MLFLOW_TRACKING_URL is not None
+
 
 class track:
     def __enter__(self):
@@ -20,7 +22,7 @@ class track:
 
     def set_model(self, model):
         if USE_MLFLOW:
-            mlflow.log_param('model', model.name)
+            mlflow.log_param("model", model.name)
 
     def log_params(self, params):
         if USE_MLFLOW:
