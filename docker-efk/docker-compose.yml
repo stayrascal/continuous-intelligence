@@ -13,12 +13,12 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
-    container_name: es01
+    container_name: elasticsearch
     environment:
-      - node.name=es01
+      - node.name=elasticsearch
       # - discovery.type=single-node
-      - discovery.seed_hosts=es02
-      - cluster.initial_master_nodes=es01,es02
+      - discovery.seed_hosts=elasticsearch2
+      - cluster.initial_master_nodes=elasticsearch,elasticsearch2
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       # - network.publish_host=elasticsearch
@@ -42,11 +42,11 @@ services:
   
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
-    container_name: es02
+    container_name: elasticsearch2
     environment:
-      - node.name=es02
-      - discovery.seed_hosts=es01
-      - cluster.initial_master_nodes=es01,es02
+      - node.name=elasticsearch2
+      - discovery.seed_hosts=elasticsearch
+      - cluster.initial_master_nodes=elasticsearch,elasticsearch2
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       # - network.publish_host=elasticsearch
@@ -74,6 +74,7 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.2.0
+    container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - XPACK_GRAPH_ENABLED=true
@@ -87,6 +88,7 @@ services:
   
   logstash:
     image: docker.elastic.co/logstash/logstash:7.2.0
+    container_name: logstash
     ports:
       - "5001:5000"
       - "9600:9600"
@@ -98,6 +100,7 @@ services:
 
   portainer:
     image: portainer/portainer
+    container_name: portainer
     ports:
       - 9000:9000
     volumes:
@@ -117,34 +120,36 @@ services:
     environment:
       - FLUENTD_CONF=fluentd.conf
     
-  web:
-    image: httpd
-    ports:
-      - 80:80
-    logging:
-      driver: fluentd
-      options:
-        tag: docker.httpd
-    networks:
-      - esnet
-  
-  # mlflow:
-  #   build: ./mlflow
+  # web:
+  #   image: httpd
+  #   container_name: web
   #   ports:
-  #     - 5000:5000
+  #     - 80:80
+  #   logging:
+  #     driver: fluentd
+  #     options:
+  #       tag: docker.httpd
   #   networks:
   #     - esnet
+  
+  mlflow:
+    build: ./mlflow
+    container_name: mlflow
+    ports:
+      - 5000:5000
+    networks:
+      - esnet
 
 networks:
   esnet:
     external: true
 
-configs:
-  elastic_config:
-    file: ./elasticsearch/config/elasticsearch.yml
-  logstash_config:
-    file: ./logstash/config/logstash.yml
-  logstash_config:
-    file: ./logstash/pipeline/logstash.conf
-  kibana_config:
-    file: ./kibana/config/kibana.yml
+#configs:
+#  elastic_config:
+#    file: ./elasticsearch/config/elasticsearch.yml
+#  logstash_config:
+#    file: ./logstash/config/logstash.yml
+#  logstash_config:
+#    file: ./logstash/pipeline/logstash.conf
+#  kibana_config:
+#    file: ./kibana/config/kibana.yml
