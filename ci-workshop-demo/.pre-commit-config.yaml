@@ -1,0 +1,48 @@
+repos:
+  - repo: local
+    hooks:
+      - id: isort
+        name: isort
+        stages: [commit]
+        language: system
+        entry: pipenv run isort
+        types: [python]
+
+      - id: black
+        name: black
+        stages: [commit]
+        language: system
+        entry: pipenv run black
+        types: [python]
+
+      - id: flake8
+        name: flake8
+        stages: [commit]
+        language: system
+        entry: pipenv run flake8
+        types: [python]
+        exclude: setup.py
+
+      - id: pytest-cov
+        name: pytest
+        stages: [commit, push]
+        language: system
+        entry: pipenv run pytest --cov --cov-fail-under=9 --html=reports/report.html --alluredir=reports/allure
+        types: [python]
+        pass_filenames: false
+
+#  - repo: https://github.com/python/black
+#    rev: 19.3b0
+#    hooks:
+#      - id: black
+#  - repo: https://gitlab.com/pycqa/flake8
+#    rev: 3.7.7
+#    hooks:
+#      - id: flake8
+#        additional_dependencies: [flake8-bugbear]
+#  - repo: https://github.com/pre-commit/pre-commit-hooks
+#    rev: v2.2.3
+#    hooks:
+#      - id: check-byte-order-marker
+#      - id: trailing-whitespace
+#      - id: end-of-file-fixer
