@@ -9,4 +9,4 @@ RUN apt-get update \
 RUN mkdir -p /app
 COPY requirements.txt /app
 
-RUN cd /app & pip3 install --no-cache-dir -r requirements.txt
+RUN cd /app && pip3 install --no-cache-dir -r requirements.txt

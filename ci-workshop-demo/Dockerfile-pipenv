@@ -1,0 +1,41 @@
+# ================================================================= #
+# ------------ First stage in our multistage Dockerfile ----------- #
+# ================================================================= #
+FROM python:3.6-slim as Base
+
+RUN pip install pipenv
+
+RUN mkdir -p /app/continuous-intelligence/{src,data}
+
+COPY start.sh /app/continuous-intelligence
+COPY src /app/continuous-intelligence/src
+COPY test /app/continuous-intelligence/test
+COPY bin /app/continuous-intelligence/bin
+
+ADD Pipfile.lock /app/continuous-intelligence/Pipfile.lock
+ADD Pipfile /app/continuous-intelligence/Pipfile
+
+WORKDIR /app/continuous-intelligence
+RUN chmod +x /app/continuous-intelligence/start.sh
+RUN chmod +x /app/continuous-intelligence/bin/*
+RUN pipenv install --deploy
+
+# ================================================================= #
+# ------------ Second stage in our multistage Dockerfile ---------- #
+# ================================================================= #
+
+FROM Base as Build
+
+RUN /app/continuous-intelligence/bin/train_model.sh
+RUN /app/continuous-intelligence/bin/test_model.sh
+
+# ================================================================= #
+# ------------ Third stage in our multistage Dockerfile ----------- #
+# ================================================================= #
+FROM Build as Dev
+
+COPY --from=Build /app/continuous-intelligence/data/models /app/continuous-intelligence/data/models
+
+EXPOSE 5005
+
+CMD ["pipenv run /app/continuous-intelligence/bin/start_server.sh"]
