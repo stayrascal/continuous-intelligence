@@ -27,7 +27,7 @@ A demo on how to apply continuous delivery principles to train, test and deploy 
 ### Docker Build
 1. Please ensure you've completed the process from **Local Build**
 
-2. Build base image: `docker build -t ci-workshop-demo-base -f Dockerfile .`
+2. Build base image: `docker build -t ci-workshop-demo-base -f Dockerfile-base .`
 
 3. Build application image: `docker build . -t ci-workshop-demo`
 
